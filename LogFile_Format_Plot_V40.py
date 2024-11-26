@@ -10,7 +10,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
-ser = serial.Serial("COM6", 115200)
+ser = serial.Serial("COM7", 115200)
 
 print("stage-01")
 
