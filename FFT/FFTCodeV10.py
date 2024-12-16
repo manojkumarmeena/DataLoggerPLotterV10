@@ -1,102 +1,86 @@
-##import matplotlib.pyplot as plt
 ##import numpy as np
+##import matplotlib.pyplot as plt
+##from scipy.fftpack import fft, rfft,ifft
 ##import pandas as pd
 ##
-##df = pd.read_csv('output2.csv', delimiter=',', parse_dates=[1])
-##df.rename(columns={'Timestamp':'Time(us)', 'Total ACC':'AY(g)'},inplace=True)
+### Import csv file
+##df = pd.read_csv('1ogsample.csv')
+###print(df.head())
 ##
-##plt.figure(figsize = (12, 6))
-##plt.plot(df['Time(us)'], df['AY(g)'])
-##plt.xlabel('Time')
-##plt.ylabel('Acceleration(g)')
-##plt.xticks(rotation=25) 
+###plot data
+####plt.figure(figsize=(12,4))
+####df.plot(linestyle = '', marker = '*', color='r')
+####plt.savefig('log4fft.jpg')
+####plt.show()
+##
+###FFT
+###number of sample points
+##N = 283280
+###frequency of signal (us)
+##T = 333
+###create x-axis for time length of signal
+##x = np.linspace(0, N*T, N)
+###create array that corresponds to values in signal
+##y = df
+###perform FFT on signal
+##yf = rfft(y)
+###create new x-axis: frequency from signal
+##xf = np.linspace(0.0, 1.0/(2.0*T), N//2) * 10000
+###plot results
+##
+####plt.xlim(-20,20)
+####plt.ylim(-16,16)
+##
+##plt.plot(xf, abs(yf[0:N//2]), label = 'signal')
+##plt.grid()
+##plt.xlabel('FRQ(Hz)')
+##plt.ylabel(r'PSD')
+##
+##plt.legend(loc=1)
+##plt.savefig('log4fft.jpg')
 ##plt.show()
-##
-##from numpy.fft import fft, ifft
-##
-##X = fft(x)
-##N = len(X)
-##n = np.arange(N)
-##T = N/sr
-##freq = n/T 
-##
-##plt.figure(figsize = (12, 6))
-##plt.subplot(121)
-##
-##plt.stem(freq, np.abs(X), 'b', \
-##         markerfmt=" ", basefmt="-b")
-##plt.xlabel('Freq (Hz)')
-##plt.ylabel('FFT Amplitude |X(freq)|')
-##plt.xlim(0, 10)
-##
-##plt.subplot(122)
-##plt.plot(t, ifft(X), 'r')
-##plt.xlabel('Time (s)')
-##plt.ylabel('Amplitude')
-##plt.tight_layout()
-##plt.show()
-##
 
-##import matplotlib.pyplot as plt
-##import scipy.signal
-##import pandas as pd
 ##import numpy as np
-##from numpy.fft import rfft, rfftfreq
+##import pandas as pd
 ##import matplotlib.pyplot as plt
 ##
-##t=pd.read_csv('output2.csv',usecols=[0])
-##a=pd.read_csv('output2.csv',usecols=[1])
-##n=len(a)                ##/no of samples
-##dt=0.000333 #time increment in each data
+###df = pd.read_csv('1.csv')
+##df = pd.read_csv('logsample.csv')
 ##
-##acc=a.values.flatten() #to convert DataFrame to 1D array
-###acc value must be in numpy array format for half way mirror calculation
 ##
-##fft=rfft(acc)*dt
-##freq=rfftfreq(n,d=dt)
+### The horizontal index must be linear
+###assert np.all(df.Time.diff()[1:] == 1)
+###assert (df['Time'].str.len() == 8).all()
+###padded_array = np.pad('AX',pad_width=8,mode='constant',constant_values=0)
 ##
-##FFT=abs(fft)
+##yf = np.fft.rfft(df.AX, norm='forward')
+###ff = np.fft.rfftfreq(n=len(df), d=0.000333)
+##ff = np.fft.rfftfreq(2803280, d=0.000333)
 ##
-##plt.plot(freq,FFT)
-##plt.xlabel('Frequency(Hz)')
-##plt.ylabel('PSD')
+##fig, ax = plt.subplots()
+##ax.loglog(ff, yf)
+##
+##plt.xlim(0,2000)
+##plt.ylim(0,16)
+##
+##ax.set_xlabel('Frequency (Hz)')
+##ax.set_ylabel('PSD(AXg)')
 ##plt.show()
-
 
 import numpy as np
-
-from scipy import signal
-
+import pandas as pd
 import matplotlib.pyplot as plt
 
-rng = np.random.default_rng()
+df = pd.read_csv('1.csv')
 
-fs = 4e3    #Frequency range (20-2000Hz)
+# The horizontal index must be linear
+assert np.all(df.epoch.diff()[1:] == 1)
 
-N = 1e5     #Samples
+yf = np.fft.rfft(df.voltage, norm='forward')
+ff = np.fft.rfftfreq(n=len(df), d=2)
 
-amp = 40*np.sqrt(2)
-
-freq = 1234.0
-
-noise_power = 0.001 * fs / 2
-
-time = np.arange(N) / fs
-
-x = amp*np.sin(2*np.pi*freq*time)
-
-x += rng.normal(scale=np.sqrt(noise_power), size=time.shape)
-
-f, Pxx_den = signal.welch(x, fs, nperseg=1024)
-
-plt.semilogy(f, Pxx_den)
-
-#plt.ylim([0.5e-3, 1])
-plt.ylim([-16, 16])
-
-plt.xlabel('frequency [Hz]')
-
-plt.ylabel('PSD [A**2/Hz]')
-
+fig, ax = plt.subplots()
+ax.loglog(ff, np.abs(yf))
+ax.set_xlabel('Frequency (Hz)')
+ax.set_ylabel('Amplitude (V)')
 plt.show()
-
